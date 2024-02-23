@@ -15,7 +15,7 @@ import 'widgets/empty_separator.dart';
 import 'widgets/error_display.dart';
 import 'widgets/initial_loader.dart';
 
-class PaginateFirestore extends StatefulWidget {
+class PaginateFirestore<T> extends StatefulWidget {
   const PaginateFirestore({
     Key? key,
     required this.itemBuilder,
@@ -48,6 +48,7 @@ class PaginateFirestore extends StatefulWidget {
     this.isLive = false,
     this.includeMetadataChanges = false,
     this.options,
+    this.queryResultFilter,
   }) : super(key: key);
 
   final Widget bottomLoader;
@@ -59,7 +60,9 @@ class PaginateFirestore extends StatefulWidget {
   final List<ChangeNotifier>? listeners;
   final EdgeInsets padding;
   final ScrollPhysics? physics;
-  final Query query;
+  final Query<T> query;
+  final List<QueryDocumentSnapshot> Function(List<QueryDocumentSnapshot> items)?
+      queryResultFilter;
   final bool reverse;
   final bool allowImplicitScrolling;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
@@ -173,6 +176,7 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
       widget.itemsPerPage,
       widget.startAfterDocument,
       isLive: widget.isLive,
+      queryResultFilter: widget.queryResultFilter,
     )..fetchPaginatedList();
     super.initState();
   }

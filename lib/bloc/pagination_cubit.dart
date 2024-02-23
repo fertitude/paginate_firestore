@@ -15,6 +15,7 @@ class PaginationCubit extends Cubit<PaginationState> {
     this.isLive = false,
     this.includeMetadataChanges = false,
     this.options,
+    this.queryResultFilter,
   }) : super(PaginationInitial());
 
   DocumentSnapshot? _lastDocument;
@@ -24,6 +25,8 @@ class PaginationCubit extends Cubit<PaginationState> {
   final bool isLive;
   final bool includeMetadataChanges;
   final GetOptions? options;
+  final List<QueryDocumentSnapshot> Function(List<QueryDocumentSnapshot> items)?
+      queryResultFilter;
 
   final _streams = <StreamSubscription<QuerySnapshot>>[];
 
@@ -128,7 +131,10 @@ class PaginationCubit extends Cubit<PaginationState> {
   ) {
     final prevIds = previousList.map((prevSnapshot) => prevSnapshot.id).toSet();
     newList.retainWhere((newSnapshot) => prevIds.add(newSnapshot.id));
-    return previousList + newList;
+    final result = queryResultFilter != null
+        ? queryResultFilter!([...previousList, ...newList])
+        : [...previousList, ...newList];
+    return result;
   }
 
   Query _getQuery() {
