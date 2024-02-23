@@ -15,7 +15,7 @@ import 'widgets/empty_separator.dart';
 import 'widgets/error_display.dart';
 import 'widgets/initial_loader.dart';
 
-class PaginateFirestore<T> extends StatefulWidget {
+class PaginateFirestore extends StatefulWidget {
   const PaginateFirestore({
     Key? key,
     required this.itemBuilder,
@@ -60,9 +60,9 @@ class PaginateFirestore<T> extends StatefulWidget {
   final List<ChangeNotifier>? listeners;
   final EdgeInsets padding;
   final ScrollPhysics? physics;
-  final Query<T?> query;
-  final List<QueryDocumentSnapshot<T>> Function(
-      List<QueryDocumentSnapshot<T>> items)? queryResultFilter;
+  final Query query;
+  final List<QueryDocumentSnapshot> Function(List<QueryDocumentSnapshot> items)?
+      queryResultFilter;
   final bool reverse;
   final bool allowImplicitScrolling;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
@@ -87,8 +87,7 @@ class PaginateFirestore<T> extends StatefulWidget {
 
   final Widget Function(Exception)? onError;
 
-  final Widget Function(BuildContext, List<DocumentSnapshot<T>>, int)
-      itemBuilder;
+  final Widget Function(BuildContext, List<DocumentSnapshot>, int) itemBuilder;
 
   final void Function(PaginationLoaded)? onReachedEnd;
 

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 
 part 'pagination_state.dart';
 
-class PaginationCubit<T> extends Cubit<PaginationState> {
+class PaginationCubit extends Cubit<PaginationState> {
   PaginationCubit(
     this._query,
     this._limit,
@@ -20,13 +20,13 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
 
   DocumentSnapshot? _lastDocument;
   final int _limit;
-  final Query<T> _query;
+  final Query _query;
   final DocumentSnapshot? _startAfterDocument;
   final bool isLive;
   final bool includeMetadataChanges;
   final GetOptions? options;
-  final List<QueryDocumentSnapshot<T>> Function(
-      List<QueryDocumentSnapshot<T>> items)? queryResultFilter;
+  final List<QueryDocumentSnapshot> Function(List<QueryDocumentSnapshot> items)?
+      queryResultFilter;
 
   final _streams = <StreamSubscription<QuerySnapshot>>[];
 
@@ -56,14 +56,13 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
       final listener = localQuery
           .snapshots(includeMetadataChanges: includeMetadataChanges)
           .listen((querySnapshot) {
-        _emitPaginatedState(
-            querySnapshot.docs as List<QueryDocumentSnapshot<T>>);
+        _emitPaginatedState(querySnapshot.docs);
       });
 
       _streams.add(listener);
     } else {
       final querySnapshot = await localQuery.get(options);
-      _emitPaginatedState(querySnapshot.docs as List<QueryDocumentSnapshot<T>>);
+      _emitPaginatedState(querySnapshot.docs);
     }
   }
 
@@ -81,9 +80,9 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
         if (loadedState.hasReachedEnd) return;
         final querySnapshot = await localQuery.get(options);
         _emitPaginatedState(
-          querySnapshot.docs as List<QueryDocumentSnapshot<T>>,
+          querySnapshot.docs,
           previousList:
-              loadedState.documentSnapshots as List<QueryDocumentSnapshot<T>>,
+              loadedState.documentSnapshots as List<QueryDocumentSnapshot>,
         );
       }
     } on PlatformException catch (exception) {
@@ -105,9 +104,9 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
           .listen((querySnapshot) {
         loadedState = state as PaginationLoaded;
         _emitPaginatedState(
-          querySnapshot.docs as List<QueryDocumentSnapshot<T>>,
+          querySnapshot.docs,
           previousList:
-              loadedState.documentSnapshots as List<QueryDocumentSnapshot<T>>,
+              loadedState.documentSnapshots as List<QueryDocumentSnapshot>,
         );
       });
 
@@ -116,8 +115,8 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
   }
 
   void _emitPaginatedState(
-    List<QueryDocumentSnapshot<T>> newList, {
-    List<QueryDocumentSnapshot<T>> previousList = const [],
+    List<QueryDocumentSnapshot> newList, {
+    List<QueryDocumentSnapshot> previousList = const [],
   }) {
     _lastDocument = newList.isNotEmpty ? newList.last : null;
     emit(PaginationLoaded(
@@ -126,9 +125,9 @@ class PaginationCubit<T> extends Cubit<PaginationState> {
     ));
   }
 
-  List<QueryDocumentSnapshot<T>> _mergeSnapshots(
-    List<QueryDocumentSnapshot<T>> previousList,
-    List<QueryDocumentSnapshot<T>> newList,
+  List<QueryDocumentSnapshot> _mergeSnapshots(
+    List<QueryDocumentSnapshot> previousList,
+    List<QueryDocumentSnapshot> newList,
   ) {
     final prevIds = previousList.map((prevSnapshot) => prevSnapshot.id).toSet();
     newList.retainWhere((newSnapshot) => prevIds.add(newSnapshot.id));
